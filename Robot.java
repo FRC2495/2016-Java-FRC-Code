@@ -3,6 +3,8 @@ package org.usfirst.frc.team2495.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PWM;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Talon;
@@ -26,29 +28,57 @@ import edu.wpi.first.wpilibj.CameraServer;
  */
 public class Robot extends IterativeRobot {
 	
-	public static final ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
 	public static OI oi;
     Command autonomousCommand;
     SendableChooser autochooser;
-    Talon fly,back,arm,lift,tankR,tankL;
+    Talon fly,back,arm,lift,tankRR,tankRF,tankLF,tankLR;
     Joystick right,left,op;
-    USBCamera usb;
-    CameraServer usbServer;
+    CameraServer cam0;
     Servo liftCont;
-
+    Shooter shoot;
+    Timer getTime;
+    Preferences auton;
+    double TIME = 2.5;
     /**
      * This function is run when the robot is first started up and should be
      * used for any initialization code.
      */
+    
+
+    
+    
     public void robotInit() {
     	
-		oi = new OI();
+    	
+    	
+		//oi = new OI();
        // autochooser = new SendableChooser();
         //autochooser.addDefault("Default Auto", new ExampleCommand());
-//        chooser.addObject("My Auto", new MyAutoCommand());
+//     chooser.addObject("My Auto", new MyAutoCommand());
        // SmartDashboard.putData("Auto mode", autochooser);
+        cam0 = CameraServer.getInstance();
+        cam0.setQuality(25);
+        cam0.setSize(100);
+        cam0.startAutomaticCapture();
+      	right = new Joystick(0);//Joysticks left, right, and operator
+		left = new Joystick(1);
+	//	op = new Joystick(2);
+		fly = new Talon(4);//Shooter Motor PWM Port 2
+    	arm = new Talon(5);//Arm Motor PWM Port 3
+    	back = new Talon(6);//Back Wheels PWM Port 4
+    	tankRR = new Talon(0);
+    	tankRF = new Talon(1);
+    	tankLR= new Talon(2);
+    	tankLF = new Talon(3);
+    	liftCont = new Servo(7);  
+    	
+    	tankRR.set(0);
+    	tankRF.set(0);
+    	tankLR.set(0);
+    	tankLF.set(0);
+    	
+    	
         
-      startCompetition();
     }
 	
 	/**
@@ -76,15 +106,7 @@ public class Robot extends IterativeRobot {
 	 * or additional comparisons to the switch structure below with additional strings & commands.
 	 */
     public void autonomousInit() {
-    	right = new Joystick(0);//Joysticks left, right, and operator
-		left = new Joystick(1);
-		op = new Joystick(2);
-		fly = new Talon(2);//Shooter Motor PWM Port 2
-    	arm = new Talon(3);//Arm Motor PWM Port 3
-    	back = new Talon(4);//Back Wheels PWM Port 4
-    	tankR = new Talon(0);
-    	tankL= new Talon(1);
-    	liftCont = new Servo(5);
+    
     	
     	
        // autonomousCommand = (Command) autochooser.getSelected();
@@ -102,48 +124,34 @@ public class Robot extends IterativeRobot {
     	
     	// schedule the autonomous command (example)
        // if (autonomousCommand != null) autonomousCommand.start();
+    	getTime = new Timer();
+    	getTime.start();
     }
 
     /**
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
-    	fly = new Talon(2);//Shooter Motor
-    	arm = new Talon(3);//Arm Motor
-    	back = new Talon(4);//Back Wheels
-    	tankR = new Talon(0);
-    	tankL = new Talon(1);
+    
         Scheduler.getInstance().run();
         
-        Timer getTime = new Timer();
-        getTime.start();
-        while(!getTime.hasPeriodPassed(2.0))
+       
+        while(getTime.get() < TIME)
         {
-        	tankR.set(-.75);
-        	tankL.set(.75);
+        	tankRR.set(.75);
+        	tankRF.set(.75);
+        	tankLR.set(-.75);
+        	tankLF.set(-.75);
         }
-       tankR.set(0);
-       tankL.set(0);
+       tankRR.set(0);
+       tankRF.set(0);
+       tankLR.set(0);
+       tankLF.set(0);
       
     }
 
     public void teleopInit() {
-    	//usb = new USBCamera();
-    	//usb.openCamera();
-    	//usb.startCapture();
-    	//usbServer.startAutomaticCapture("Cam0");//TODO Put usb Camera Name
-		
-        if (autonomousCommand != null) autonomousCommand.cancel();
-        right = new Joystick(0);//Joysticks left, right, and operator
-		left = new Joystick(1);
-		op = new Joystick(2);
-		fly = new Talon(2);//Shooter Motor PWM Port 2
-    	arm = new Talon(3);//Arm Motor PWM Port 3
-    	back = new Talon(4);//Back Wheels PWM Port 4
-    	tankR = new Talon(0);
-    	tankL= new Talon(1);
-    	liftCont = new Servo(5);
-    	
+    getTime = new Timer();
     }
 
     /**
@@ -151,33 +159,39 @@ public class Robot extends IterativeRobot {
      */
     public void teleopPeriodic() {
     	
-    	right = new Joystick(0);//Joysticks left, right, and operator
-		left = new Joystick(1);
-		op = new Joystick(2);
-		fly = new Talon(2);//Shooter Motor PWM Port 2
-    	arm = new Talon(3);//Arm Motor PWM Port 3
-    	back = new Talon(4);//Back Wheels PWM Port 4
-    	tankR = new Talon(0);
-    	tankL= new Talon(1);
-    	liftCont = new Servo(5);
-    	
    
-    	Shooter shoot = new Shooter();
-    	
+ 
+    	   Scheduler.getInstance().run();
+        
     	if(right.getTrigger() && left.getTrigger())//If driver Triggers slow speed by 2
     	{
-    		tankR.set(right.getY());
-    		tankL.set(left.getY());
+    		tankRR.set(-1 * right.getY());
+    		tankRF.set(-1 * right.getY());
+    		tankLR.set(left.getY());
+    		tankLF.set(left.getY());
     	}
     	else
     	{
-    		tankR.set(right.getY() / 2);
-    		tankL.set(left.getY() / 2);
+    		tankRR.set(-1 * right.getY() / 2);
+    		tankRF.set(-1 * right.getY() / 2);
+    		tankLR.set(left.getY() / 2);
+    		tankLF.set(left.getY() / 2);
     	}
+    	/*
     	
     	if(op.getTrigger())//If operator Trigger Launch Sequence
     	{
-    		shoot.execute();
+    		getTime.reset();
+    		fly.set(-1);//Start Spin up
+    		getTime.start();
+    		while(!getTime.hasPeriodPassed(1));//Wait 1sec
+    		back.set(-1);//Back Wheel Spin
+    		getTime.reset();
+    		getTime.start();
+    		while(!getTime.hasPeriodPassed(.25));//Wait 1/4 sec
+    		fly.set(0);//Stop
+    		back.set(0);
+    		
     	}
 		
     	if(op.getRawButton(2))//Intake
@@ -193,22 +207,17 @@ public class Robot extends IterativeRobot {
      	{
     		arm.set(-1);
     	}
+    	
+    	else if(op.getY() >= .5)
+    	{
+    	arm.set(1);
+    	}
+    	
     	else
     	{
     		arm.set(0);
     	}
     	
-    	if(op.getY() >= .5)//IF Joystick is down, go down?
-    	{
-    		arm.set(1);
-    	}
-    	else
-    	{
-    		arm.set(0);
-    	}
-    	
-       Scheduler.getInstance().run();
-        
         if(op.getRawButton(8))
         {
         	liftCont.set(-1);
@@ -217,7 +226,7 @@ public class Robot extends IterativeRobot {
         {
         	liftCont.set(0);
         }
-       
+      /*
         if(op.getRawButton(6))
         {
         	lift.set(-1);
@@ -226,8 +235,10 @@ public class Robot extends IterativeRobot {
         {
         	lift.set(0);
         }
+        */
+       
         
-        
+    	
     }
     
     /**
